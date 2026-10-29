@@ -24,16 +24,19 @@ The platform employs a **5-Tier Enterprise Cloud Architecture**:
 
 ```bash
 # Clone the repository
-git clone [https://github.com/](https://github.com/)<your-username>/sentinelpulse.git
+git clone https://github.com/<your-username>/sentinelpulse.git
 cd sentinelpulse
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Run the command center dashboard
-streamlit run app.py
+python3 -m streamlit run app.py
+```
 
-🛡️ Privacy & Compliance
-Zero PII Leakage: Worker civil identifiers are decoupled at Tier 3 ingestion.
+---
 
-Explainable Triage: Pure deterministic clinical logic based on OSHA/NIOSH threshold standards to eliminate false alarms and avoid automated AI hallucinations.
+## 🛡️ Privacy & Compliance
+
+* **Zero PII Leakage:** Worker civil identifiers are decoupled at Tier 3 ingestion.
+* **Explainable Triage:** Pure deterministic clinical logic based on OSHA/NIOSH threshold standards to eliminate false alarms and avoid automated AI hallucinations.
