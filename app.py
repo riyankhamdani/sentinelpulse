@@ -24,10 +24,30 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # Zona Industri Riil Abu Dhabi (DoH / ADPHC Jurisdiction)
 ZONES_GEO = {
-    "ICAD Musaffah (Heavy Industry)": {"lat": 24.3220, "lon": 54.4980, "wbgt": 33.1},
-    "KIZAD / Khalifa Port (Logistics)": {"lat": 24.8115, "lon": 54.7160, "wbgt": 31.8},
-    "Al Dhafra PV2 (Desert Energy Site)": {"lat": 23.9500, "lon": 54.3800, "wbgt": 34.5},
-    "Ruwais Petrochemical Complex": {"lat": 24.1100, "lon": 52.7300, "wbgt": 32.2},
+    "ICAD Musaffah": {
+        "full_name": "ICAD Musaffah (Heavy Industry)",
+        "lat": 24.3220,
+        "lon": 54.4980,
+        "wbgt": 33.1,
+    },
+    "KIZAD Khalifa Port": {
+        "full_name": "KIZAD / Khalifa Port (Logistics Hub)",
+        "lat": 24.8115,
+        "lon": 54.7160,
+        "wbgt": 31.8,
+    },
+    "Al Dhafra Solar Site": {
+        "full_name": "Al Dhafra PV2 (Desert Energy Site)",
+        "lat": 23.9500,
+        "lon": 54.3800,
+        "wbgt": 34.5,
+    },
+    "Ruwais Complex": {
+        "full_name": "Ruwais Petrochemical Complex",
+        "lat": 24.1100,
+        "lon": 52.7300,
+        "wbgt": 32.2,
+    },
 }
 
 # ==============================================================================
@@ -43,11 +63,11 @@ def anonymize_identifier(raw_id: str, salt: str = "ADPHC-2026") -> str:
 # ==============================================================================
 def get_baseline_workers():
     records = [
-        {"raw_id": "CIVIL-ID-9081", "Name": "Worker 01", "Zone": "ICAD Musaffah (Heavy Industry)", "Heart Rate": 82, "Core Temp": 37.1, "SpO2": 99},
-        {"raw_id": "CIVIL-ID-4412", "Name": "Worker 02", "Zone": "ICAD Musaffah (Heavy Industry)", "Heart Rate": 88, "Core Temp": 37.3, "SpO2": 98},
-        {"raw_id": "CIVIL-ID-6731", "Name": "Worker 03", "Zone": "KIZAD / Khalifa Port (Logistics)", "Heart Rate": 76, "Core Temp": 36.9, "SpO2": 99},
-        {"raw_id": "CIVIL-ID-1190", "Name": "Worker 04", "Zone": "Al Dhafra PV2 (Desert Energy Site)", "Heart Rate": 92, "Core Temp": 37.4, "SpO2": 97},
-        {"raw_id": "CIVIL-ID-5532", "Name": "Worker 05", "Zone": "Ruwais Petrochemical Complex", "Heart Rate": 84, "Core Temp": 37.0, "SpO2": 99},
+        {"raw_id": "CIVIL-ID-9081", "Name": "Worker 01", "Zone": "ICAD Musaffah", "Heart Rate": 82, "Core Temp": 37.1, "SpO2": 99},
+        {"raw_id": "CIVIL-ID-4412", "Name": "Worker 02", "Zone": "ICAD Musaffah", "Heart Rate": 88, "Core Temp": 37.3, "SpO2": 98},
+        {"raw_id": "CIVIL-ID-6731", "Name": "Worker 03", "Zone": "KIZAD Khalifa Port", "Heart Rate": 76, "Core Temp": 36.9, "SpO2": 99},
+        {"raw_id": "CIVIL-ID-1190", "Name": "Worker 04", "Zone": "Al Dhafra Solar Site", "Heart Rate": 92, "Core Temp": 37.4, "SpO2": 97},
+        {"raw_id": "CIVIL-ID-5532", "Name": "Worker 05", "Zone": "Ruwais Complex", "Heart Rate": 84, "Core Temp": 37.0, "SpO2": 99},
     ]
     df = pd.DataFrame(records)
     df["Tokenized ID"] = df["raw_id"].apply(anonymize_identifier)
@@ -101,7 +121,7 @@ Return STRICT JSON only matching this schema:
                 config={"response_mime_type": "application/json"}
             )
             return json.loads(res.text)
-        except Exception as e:
+        except Exception:
             pass
 
     # Deterministic Engine Fallback (Clinical Standard OSHA/NIOSH)
@@ -164,7 +184,6 @@ else:
     )
 
     if st.session_state.is_streaming:
-        # Dynamic telemetry updates without manual button mocks
         df_curr = st.session_state.telemetry_df.copy()
         target_idx = 1  # Subject 02
 
@@ -205,46 +224,46 @@ st.title("⚡ SentinelPulse Command Center")
 st.caption("Autonomous Syndromic Health Early Warning & Dispatch Platform — Abu Dhabi Operations")
 
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-kpi1.metric("Active Monitored Cohort", "4,205 Personnel", "+12 shift net")
+kpi1.metric("Monitored Cohort", "4,205", "+12 shift net")
 max_wbgt = max(z["wbgt"] for z in ZONES_GEO.values())
-kpi2.metric("Peak Regional WBGT", f"{max_wbgt} °C", "Extreme Thermal Load", delta_color="inverse")
-kpi3.metric("Telemetry Pipeline Ingestion SLA", "340 ms", "-60 ms TLS 1.3")
+kpi2.metric("Peak WBGT", f"{max_wbgt} °C", "Extreme Heat", delta_color="inverse")
+kpi3.metric("Pipeline Ingestion SLA", "340 ms", "-60 ms TLS 1.3")
 
 if has_anomaly:
     threat_cnt = len(critical_workers)
-    kpi4.metric("Active Physiological Alerts", f"{threat_cnt} Incident", "HIGH RISK DISPATCH", delta_color="inverse")
+    kpi4.metric("Active Alerts", f"{threat_cnt} Incident", "HIGH RISK DISPATCH", delta_color="inverse")
 else:
-    kpi4.metric("Active Physiological Alerts", "0 Incidents", "Nominal / Safe", delta_color="normal")
+    kpi4.metric("Active Alerts", "0 Incidents", "Nominal / Safe", delta_color="normal")
 
 st.markdown("---")
 
 # ==============================================================================
 # FEEDBACK 2: INTERACTIVE HEALTH RISK MAP (ABU DHABI GEOSPATIAL)
 # ==============================================================================
-st.markdown("### 🗺️ Geospatial Workforce Hazard & Exposure Map")
+st.markdown("### 🗺️ Geospatial Workforce Hazard & Exposure Map (Abu Dhabi Industrial Corridor)")
 
 map_records = []
-for zone_name, geo in ZONES_GEO.items():
-    # Cek apakah zona ini memiliki pekerja yang anomali
-    zone_workers = st.session_state.telemetry_df[st.session_state.telemetry_df["Zone"] == zone_name]
+for short_code, geo in ZONES_GEO.items():
+    zone_workers = st.session_state.telemetry_df[st.session_state.telemetry_df["Zone"] == short_code]
     zone_critical = (zone_workers["Status"] == "CRITICAL").any()
     zone_elevated = (zone_workers["Status"] == "ELEVATED").any()
 
     if zone_critical:
-        color = [220, 38, 38, 200]  # Red
-        radius = 1800
-        status_text = "CRITICAL HAZARD - HEAT INJURY DISPATCH"
+        color = [239, 68, 68, 210]  # Red
+        radius = 8000
+        status_text = "CRITICAL HAZARD - HEAT STROKE INTERVENTION"
     elif zone_elevated:
-        color = [245, 158, 11, 180]  # Yellow/Amber
-        radius = 1400
-        status_text = "ELEVATED THERMAL STRAIN"
+        color = [245, 158, 11, 190]  # Amber
+        radius = 6000
+        status_text = "ELEVATED THERMAL STRAIN WARNING"
     else:
-        color = [16, 185, 129, 160]  # Green
-        radius = 1000
-        status_text = "STABLE / SAFE OPERATIONS"
+        color = [16, 185, 129, 170]  # Green
+        radius = 4500
+        status_text = "NOMINAL BASELINE"
 
     map_records.append({
-        "Zone": zone_name,
+        "short_name": short_code,
+        "full_name": geo["full_name"],
         "lat": geo["lat"],
         "lon": geo["lon"],
         "WBGT": geo["wbgt"],
@@ -255,11 +274,13 @@ for zone_name, geo in ZONES_GEO.items():
 
 map_df = pd.DataFrame(map_records)
 
+# Focused camera lock on Abu Dhabi Capital & Industrial corridor
 view_state = pdk.ViewState(
-    latitude=24.38,
-    longitude=54.20,
-    zoom=7.8,
-    pitch=35,
+    latitude=24.35,
+    longitude=54.25,
+    zoom=8.2,
+    pitch=25,
+    bearing=0
 )
 
 layer_scatter = pdk.Layer(
@@ -268,6 +289,10 @@ layer_scatter = pdk.Layer(
     get_position="[lon, lat]",
     get_color="color",
     get_radius="radius",
+    stroked=True,
+    filled=True,
+    line_width_min_pixels=2,
+    get_line_color=[255, 255, 255, 200],
     pickable=True,
     auto_highlight=True,
 )
@@ -276,18 +301,27 @@ layer_text = pdk.Layer(
     "TextLayer",
     data=map_df,
     get_position="[lon, lat]",
-    get_text="Zone",
+    get_text="short_name",
     get_size=13,
-    get_color=[255, 255, 255, 220],
-    get_alignment_baseline="'bottom'",
+    get_color=[255, 255, 255, 255],
+    get_alignment_baseline="'center'",
+    get_text_anchor="'middle'",
+    font_family="'Helvetica Neue', Helvetica, Arial, sans-serif",
+    font_weight=700,
 )
 
 st.pydeck_chart(
     pdk.Deck(
         layers=[layer_scatter, layer_text],
         initial_view_state=view_state,
-        tooltip={"text": "📍 {Zone}\nWBGT: {WBGT}°C\nRisk Profile: {Status}"},
-        map_style="mapbox://styles/mapbox/dark-v11",
+        tooltip={
+            "html": "<b>{full_name}</b><br/>"
+                    "🌡️ Ambient WBGT: <b>{WBGT} °C</b><br/>"
+                    "⚠️ Threat Level: <b>{Status}</b>",
+            "style": {"backgroundColor": "#0f172a", "color": "#f8fafc", "fontSize": "12px", "padding": "8px", "borderRadius": "6px"}
+        },
+        map_provider="carto",
+        map_style="dark",
     )
 )
 
